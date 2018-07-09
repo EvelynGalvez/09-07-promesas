@@ -7,7 +7,11 @@ function animateElement(element, start, target, duration){ //Retornará promesa 
       const loop = setInterval(()=>{ // toma una funcion y la repite cada ciertos milisegundos
           const current = start + counter++ * delta; //a acá indicamos el movimientoto, ++counter hace que sume y luego se multiplique. Counter ++ suma después. Formula = posición inicial + velocidad*tiempo
           element.style.left = current;
-          if(current >= target){ // acá indicamos cuando queremos que finalize el moviento que seria al llegar a target
+          if(start > target && current <= target){ // acá indicamos cuando queremos que finalize el moviento que seria alb llegar a target
+              element.style.left = current;
+              clearInterval(loop); // Acá se termina la promesa
+              resolve();//Si queremos pasar una respuesta es a través del parámetro de resolve
+          }else if(start < target && current >= target){
               element.style.left = current;
               clearInterval(loop); // Acá se termina la promesa
               resolve();//Si queremos pasar una respuesta es a través del parámetro de resolve
@@ -20,9 +24,33 @@ function animateElement(element, start, target, duration){ //Retornará promesa 
 //===================== Promise ===================
 // Somos las usuarias de la promise
 
-const allLi = document.getElementsByTagName('li');
-animateElement(allLi[0], -200, 200, 2000).then(()=>{ // coordenadas fuera de la pantalla se indican con numeros negativos. Acá se está haciendo uso de la promesa por fuera.
-  console.log('Terminó la animación');
+//Secuencial
+
+const allLi = document.getElementsByTagName("li");
+/*animateElement(allLi[0], -200, 200, 4000).then(()=>{ // coordenadas fuera de la pantalla se indican con numeros negativos. Acá se está haciendo uso de la promesa por fuera.
+  console.log("Terminó la animación de doge");
+  return animateElement(allLi[1], -200, 200, 2000); //" cá tenemos una promesa anidada, es como decirle: hiciste esto, y ahora haz esto otro
+}).then(()=>{ 
+  console.log("Terminó de llegar el cate");
 }).catch(()=>{
-  console.log('Falló la animación');
-}); 
+  console.log("Falló la animación");
+}); */
+
+Promise.all( // esto devuelve un arreglo de promesas y ejecutarlas a la vez, se resuelve cuansdo terminan todas las promesas.
+  [
+      animateElement(allLi[1], -200, 600, 8000),
+      animateElement(allLi[0], -200, 600, 4000)
+  ]
+).then((results)=>{
+  console.log("Todas las animaciones terminaron");
+  return Promise.all( // esto devuelve un arreglo de promesas y ejecutarlas a la vez, se resuelve cuansdo terminan todas las promesas.
+      [
+          animateElement(allLi[1], 600, -200, 8000),
+          animateElement(allLi[0], 600, -200, 4000)
+      ]
+  )
+}).then(()=>{
+  console.log("Terminaron las animaciones de vuelta");
+}).catch(()=>{
+  console.log("Falló la animación");
+});
